@@ -85,7 +85,7 @@ public class BuildingList extends AppCompatActivity {
 
     private void initViews() {
 
-        progressDialog = new ProgressDialog(this , R.style.MyAlertDialogStyle);
+        progressDialog = new ProgressDialog(this, R.style.MyAlertDialogStyle);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         token = getIntent().getStringExtra("loginToken");
@@ -107,9 +107,8 @@ public class BuildingList extends AppCompatActivity {
 
 
     // click on fab button to add building details
-    public void addBuildingDetails(View view)
-    {
-        View formView = LayoutInflater.from(this).inflate(R.layout.add_building_details_form , null);
+    public void addBuildingDetails(View view) {
+        View formView = LayoutInflater.from(this).inflate(R.layout.add_building_details_form, null);
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setView(formView);
 
@@ -117,7 +116,7 @@ public class BuildingList extends AppCompatActivity {
         dialog.setCanceledOnTouchOutside(false);
 
         // edit text initailization
-        final EditText name , floorNo , contactPersonId , companyId, status;
+        final EditText name, floorNo, contactPersonId, companyId, status;
         name = formView.findViewById(R.id.buildingName);
         status = formView.findViewById(R.id.status);
         floorNo = formView.findViewById(R.id.noOfFloor);
@@ -126,9 +125,8 @@ public class BuildingList extends AppCompatActivity {
 
         formView.findViewById(R.id.addBuildingBtn).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
-                String buildingName , buildingStatus , buildingFloorNo , buildingCompany , buildingContactPerson;
+            public void onClick(View view) {
+                String buildingName, buildingStatus, buildingFloorNo, buildingCompany, buildingContactPerson;
 
                 buildingName = name.getText().toString();
                 buildingStatus = status.getText().toString();
@@ -137,22 +135,19 @@ public class BuildingList extends AppCompatActivity {
                 buildingContactPerson = contactPersonId.getText().toString();
 
 
-                if(!buildingName.isEmpty() && !buildingStatus.isEmpty()
-                 && !buildingFloorNo.isEmpty() && !buildingCompany.isEmpty()
-                && !buildingContactPerson.isEmpty())
-                {
+                if (!buildingName.isEmpty() && !buildingStatus.isEmpty()
+                        && !buildingFloorNo.isEmpty() && !buildingCompany.isEmpty()
+                        && !buildingContactPerson.isEmpty()) {
 
                     progressDialog.setMessage("Wait");
                     progressDialog.setCanceledOnTouchOutside(false);
                     progressDialog.show();
 
-                    addBuildingDetailsToDatabase(buildingName , buildingStatus ,
-                            buildingFloorNo , buildingCompany , buildingContactPerson);
+                    addBuildingDetailsToDatabase(buildingName, buildingStatus,
+                            buildingFloorNo, buildingCompany, buildingContactPerson);
 
                     dialog.dismiss();
-                }
-                else
-                {
+                } else {
                     Toast.makeText(BuildingList.this, "Please all fields are require", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -164,21 +159,18 @@ public class BuildingList extends AppCompatActivity {
     // method to add details to database
     private void addBuildingDetailsToDatabase(final String buildingName, final String buildingStatus,
                                               final String buildingFloorNo, final String buildingCompany,
-                                              final String buildingContactPerson)
-    {
+                                              final String buildingContactPerson) {
 
         StringRequest addBuildingRequest = new StringRequest(Request.Method.POST, UrlsContract.CREATE_BUILDING_URL,
                 new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("addBuildingDetails", "onResponse: " + response);
+                        progressDialog.dismiss();
+                    }
+                }, new Response.ErrorListener() {
             @Override
-            public void onResponse(String response)
-            {
-                Log.d("addBuildingDetails", "onResponse: "+response);
-                progressDialog.dismiss();
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error)
-            {
+            public void onErrorResponse(VolleyError error) {
                 String responseBody = null;
                 try {
 
@@ -197,12 +189,10 @@ public class BuildingList extends AppCompatActivity {
                 }
 
             }
-        })
-        {
+        }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError
-            {
-                Map<String , String> buildingData = new HashMap<>();
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> buildingData = new HashMap<>();
                 buildingData.put("name", buildingName);
                 buildingData.put("no_of_floor", buildingFloorNo);
                 buildingData.put("status", buildingStatus);
@@ -402,7 +392,6 @@ public class BuildingList extends AppCompatActivity {
         }
 
     }
-
 
 
 }
