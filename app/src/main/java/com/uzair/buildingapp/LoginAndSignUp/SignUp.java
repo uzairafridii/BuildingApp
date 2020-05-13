@@ -14,11 +14,9 @@ import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.uzair.buildingapp.HomeDashBoard.HomePage;
 import com.uzair.buildingapp.R;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
@@ -69,7 +67,7 @@ public class SignUp extends AppCompatActivity {
 
     // sign in text click
     public void signIn(View view) {
-        startActivity(new Intent(SignUp.this, MainActivity.class));
+        startActivity(new Intent(SignUp.this, LoginActivity.class));
         this.finish();
     }
 
@@ -100,7 +98,9 @@ public class SignUp extends AppCompatActivity {
                             Log.d("createUserResponse", "onResponse: " + response);
                             Toast.makeText(SignUp.this, "Successfully Register ", Toast.LENGTH_LONG).show();
                             progressDialog.dismiss();
-                            startActivity(new Intent(SignUp.this, HomePage.class));
+                            Intent intent = new Intent(SignUp.this, HomePage.class);
+                            intent.putExtra("token" , token);
+                            startActivity(intent);;
                             SignUp.this.finish();
 
 

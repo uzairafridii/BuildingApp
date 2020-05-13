@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:paddingBottom="@dimen/margin_16"
+        android:layout_marginTop="@dimen/margin_16"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        >
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_22"
+            android:paddingBottom="@dimen/margin_12"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/addBuildingNowText"
+                android:text="Add Building Details !"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:layout_marginTop="@dimen/margin_16"
+                android:textColor="@color/textColor"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+
+            <EditText
+                android:id="@+id/buildingName"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:background="@drawable/ed_bg"
+                android:hint="Enter building name"
+                android:elevation="@dimen/margin_12"
+                android:paddingLeft="@dimen/margin_16"
+                android:layout_marginLeft="@dimen/margin_16"
+                android:layout_marginRight="@dimen/margin_16"
+                android:layout_marginTop="@dimen/margin_32"
+                android:inputType="text"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/addBuildingNowText"
+                />
+
+            <EditText
+                android:id="@+id/noOfFloor"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:background="@drawable/ed_bg"
+                android:hint="Enter floor number"
+                android:elevation="@dimen/margin_12"
+                android:paddingLeft="@dimen/margin_16"
+                android:layout_marginLeft="@dimen/margin_16"
+                android:layout_marginRight="@dimen/margin_16"
+                android:layout_marginTop="@dimen/margin_22"
+                android:inputType="phone"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/buildingName"
+                />
+
+            <EditText
+                android:id="@+id/contactPersonId"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:background="@drawable/ed_bg"
+                android:hint="Enter contact person id"
+                android:elevation="@dimen/margin_12"
+                android:paddingLeft="@dimen/margin_16"
+                android:layout_marginLeft="@dimen/margin_16"
+                android:layout_marginRight="@dimen/margin_16"
+                android:layout_marginTop="@dimen/margin_22"
+                android:inputType="number"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/noOfFloor"
+                />
+
+            <EditText
+                android:id="@+id/companyGuid"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:background="@drawable/ed_bg"
+                android:hint="Enter company guid"
+                android:elevation="@dimen/margin_12"
+                android:paddingLeft="@dimen/margin_16"
+                android:layout_marginLeft="@dimen/margin_16"
+                android:layout_marginRight="@dimen/margin_16"
+                android:layout_marginTop="@dimen/margin_22"
+                android:inputType="textEmailAddress"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/contactPersonId"
+                />
+
+            <EditText
+                android:id="@+id/status"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:background="@drawable/ed_bg"
+                android:hint="Enter status"
+                android:elevation="@dimen/margin_12"
+                android:paddingLeft="@dimen/margin_16"
+                android:layout_marginLeft="@dimen/margin_16"
+                android:layout_marginRight="@dimen/margin_16"
+                android:layout_marginTop="@dimen/margin_22"
+                android:inputType="text"
+                android:paddingRight="@dimen/margin_12"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/companyGuid"
+                />
+
+            <Button
+                android:layout_width="160dp"
+                android:layout_height="40dp"
+                android:id="@+id/addBuildingBtn"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:text="Add Building"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/textColor"
+                android:background="@drawable/bg_button"
+                android:layout_marginTop="@dimen/margin_32"
+                android:layout_marginBottom="@dimen/margin_12"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/status"
+                />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+
+
+    <View
+        android:layout_width="130dp"
+        android:layout_height="3dp"
+        android:id="@+id/indicator"
+        android:background="@color/textColor"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/margin_4"
+        />
+
+</LinearLayout>

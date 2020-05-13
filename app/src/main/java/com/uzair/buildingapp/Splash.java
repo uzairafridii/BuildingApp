@@ -10,12 +10,10 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.uzair.buildingapp.LoginAndSignUp.MainActivity;
+import com.uzair.buildingapp.LoginAndSignUp.LoginActivity;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
 import com.uzair.buildingapp.Utils.UrlsContract;
 
@@ -59,7 +57,7 @@ public class Splash extends AppCompatActivity {
                                     Log.d("key", "onResponse: "+key);
 
 
-                                    Intent intent = new Intent(Splash.this , MainActivity.class);
+                                    Intent intent = new Intent(Splash.this , LoginActivity.class);
                                     intent.putExtra("key" , key);
                                     startActivity(intent);
                                     Splash.this.finish();
