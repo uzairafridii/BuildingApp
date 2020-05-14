@@ -24,6 +24,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -117,11 +118,13 @@ public class BuildingList extends AppCompatActivity {
 
         // edit text initailization
         final EditText name, floorNo, contactPersonId, companyId, status;
+        final CheckBox locationCheckBox;
         name = formView.findViewById(R.id.buildingName);
         status = formView.findViewById(R.id.status);
         floorNo = formView.findViewById(R.id.noOfFloor);
         companyId = formView.findViewById(R.id.companyGuid);
         contactPersonId = formView.findViewById(R.id.contactPersonId);
+        locationCheckBox = formView.findViewById(R.id.locationCheckBox);
 
         formView.findViewById(R.id.addBuildingBtn).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -137,16 +140,19 @@ public class BuildingList extends AppCompatActivity {
 
                 if (!buildingName.isEmpty() && !buildingStatus.isEmpty()
                         && !buildingFloorNo.isEmpty() && !buildingCompany.isEmpty()
-                        && !buildingContactPerson.isEmpty()) {
+                        && !buildingContactPerson.isEmpty() && locationCheckBox.isChecked()) {
 
-                    progressDialog.setMessage("Wait");
-                    progressDialog.setCanceledOnTouchOutside(false);
-                    progressDialog.show();
+                     progressDialog.setMessage("Wait");
+                        progressDialog.setCanceledOnTouchOutside(false);
+                        progressDialog.show();
 
-                    addBuildingDetailsToDatabase(buildingName, buildingStatus,
-                            buildingFloorNo, buildingCompany, buildingContactPerson);
+                        addBuildingDetailsToDatabase(buildingName, buildingStatus,
+                                buildingFloorNo, buildingCompany, buildingContactPerson);
 
-                    dialog.dismiss();
+                        dialog.dismiss();
+
+
+
                 } else {
                     Toast.makeText(BuildingList.this, "Please all fields are require", Toast.LENGTH_SHORT).show();
                 }
@@ -199,7 +205,6 @@ public class BuildingList extends AppCompatActivity {
                 buildingData.put("contact_person_guid", buildingContactPerson);
                 buildingData.put("company_guid", buildingCompany);
                 buildingData.put("lng", String.valueOf(currentLng));
-                buildingData.put("lat", String.valueOf(currentLat));
                 buildingData.put("lat", String.valueOf(currentLat));
 
                 return buildingData;
@@ -254,6 +259,10 @@ public class BuildingList extends AppCompatActivity {
                                 double distanceInKm = (double) Math.round(distance * 100) / 100;
 
                                 rvdata.setDistance(distanceInKm);
+                                rvdata.setLat(currentLat);
+                                rvdata.setLng(currentLng);
+                                rvdata.setTokenKey(token);
+
                                 Toast.makeText(BuildingList.this, distanceInKm + "", Toast.LENGTH_SHORT).show();
                                 buildingArrayList.add(rvdata);
                                 buildingListRecycler.setAdapter(adapter);

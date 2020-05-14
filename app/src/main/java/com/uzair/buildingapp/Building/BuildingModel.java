@@ -50,7 +50,32 @@ public class BuildingModel {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
-        private double distance;
+        private double distance , lat , lng;
+        private String tokenKey;
+
+    public double getLat() {
+        return lat;
+    }
+
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public double getLng() {
+        return lng;
+    }
+
+    public void setLng(double lng) {
+        this.lng = lng;
+    }
+
+    public String getTokenKey() {
+        return tokenKey;
+    }
+
+    public void setTokenKey(String tokenKey) {
+        this.tokenKey = tokenKey;
+    }
 
     public double getDistance() {
         return distance;

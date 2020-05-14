@@ -7,8 +7,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.uzair.buildingapp.BottomSheet.MenuBottomSheet;
 import com.uzair.buildingapp.R;
 
 import java.util.List;
@@ -34,9 +38,21 @@ public class AdapterForBuildingRv extends RecyclerView.Adapter<AdapterForBuildin
     @Override
     public void onBindViewHolder(@NonNull MyBuildingViewHolder holder, int position)
     {
-        BuildingModel model = buildingModelList.get(position);
+        final BuildingModel model = buildingModelList.get(position);
         holder.name.setText(model.getName());
         holder.distance.setText(model.getDistance()+" km");
+
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                new MenuBottomSheet(model.getLat() , model.getLng(), model.getTokenKey())
+                        .show(((FragmentActivity)context).getSupportFragmentManager(), "menu sheet");
+
+            }
+        });
+
+
 
     }
 
@@ -48,12 +64,14 @@ public class AdapterForBuildingRv extends RecyclerView.Adapter<AdapterForBuildin
     public class MyBuildingViewHolder extends RecyclerView.ViewHolder
     {
         private TextView name , distance;
+        private CardView cardView;
 
         public MyBuildingViewHolder(@NonNull View itemView) {
             super(itemView);
 
             name = itemView.findViewById(R.id.name);
             distance = itemView.findViewById(R.id.distance);
+            cardView = itemView.findViewById(R.id.buildingCard);
         }
 
     }
