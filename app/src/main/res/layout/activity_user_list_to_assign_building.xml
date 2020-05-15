@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Building.UserListToAssignBuilding">
+
+    <include layout="@layout/app_tool_bar"
+        android:id="@+id/userListToolbar"
+        />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/usersListRecycler"
+        android:layout_below="@+id/userListToolbar"
+        android:layout_marginTop="@dimen/margin_6"
+        />
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:onClick="addNewUserFabClick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/addNewUser"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="@dimen/margin_22"
+        android:layout_marginRight="@dimen/margin_16"
+        android:backgroundTint="@color/textColor"
+        android:src="@drawable/ic_add_black_24dp"
+        app:borderWidth="0dp"
+        app:rippleColor="@color/white"
+        />
+
+
+
+
+</RelativeLayout>

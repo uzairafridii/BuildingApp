@@ -42,6 +42,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.uzair.buildingapp.HomeDashBoard.LogModel;
 import com.uzair.buildingapp.LoginAndSignUp.LoginActivity;
 import com.uzair.buildingapp.LoginAndSignUp.SignUp;
 import com.uzair.buildingapp.R;
@@ -65,10 +66,9 @@ public class BuildingList extends AppCompatActivity {
     private String token;
     private List<BuildingModel> buildingArrayList;
     private AdapterForBuildingRv adapter;
-    private int PERMISSION_ID = 44;
-    private FusedLocationProviderClient mFusedLocationClient;
-    private double currentLat, currentLng, buildingLat, buildingLng;
+    private double  buildingLat, buildingLng;
     private ProgressDialog progressDialog;
+    private LogModel logModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +77,6 @@ public class BuildingList extends AppCompatActivity {
         setTitle("Building List");
 
         initViews();
-        getLastLocation();
         getAllBuildingsData();
 
 
@@ -86,9 +85,10 @@ public class BuildingList extends AppCompatActivity {
 
     private void initViews() {
 
+
+        logModel = new LogModel();
         progressDialog = new ProgressDialog(this, R.style.MyAlertDialogStyle);
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         token = getIntent().getStringExtra("loginToken");
         Log.d("tokenInBuildingList", "initViews: " + token);
 
@@ -204,8 +204,8 @@ public class BuildingList extends AppCompatActivity {
                 buildingData.put("status", buildingStatus);
                 buildingData.put("contact_person_guid", buildingContactPerson);
                 buildingData.put("company_guid", buildingCompany);
-                buildingData.put("lng", String.valueOf(currentLng));
-                buildingData.put("lat", String.valueOf(currentLat));
+                buildingData.put("lng", String.valueOf(logModel.getLng()));
+                buildingData.put("lat", String.valueOf(logModel.getLat()));
 
                 return buildingData;
             }
@@ -249,8 +249,8 @@ public class BuildingList extends AppCompatActivity {
                                 buildingLat = rvdata.getGeoCordinate().getCoordinates().get(1);
 
                                 Location currentLocation = new Location("currentLocation");
-                                currentLocation.setLatitude(currentLat);
-                                currentLocation.setLongitude(currentLng);
+                                currentLocation.setLatitude(logModel.getLat());
+                                currentLocation.setLongitude(logModel.getLng());
 
                                 Location destinationLocation = new Location("buildingLocation");
                                 destinationLocation.setLatitude(buildingLat);
@@ -259,8 +259,6 @@ public class BuildingList extends AppCompatActivity {
                                 double distanceInKm = (double) Math.round(distance * 100) / 100;
 
                                 rvdata.setDistance(distanceInKm);
-                                rvdata.setLat(currentLat);
-                                rvdata.setLng(currentLng);
                                 rvdata.setTokenKey(token);
 
                                 Toast.makeText(BuildingList.this, distanceInKm + "", Toast.LENGTH_SHORT).show();
@@ -294,113 +292,8 @@ public class BuildingList extends AppCompatActivity {
     }
 
 
-    // to ge the last location of user
-    @SuppressLint("MissingPermission")
-    private void getLastLocation() {
-        // check persmission and gps enable or not
-        if (checkPermissions()) {
-            if (isLocationEnabled()) {
-                mFusedLocationClient.getLastLocation().addOnCompleteListener(
-                        new OnCompleteListener<Location>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Location> task) {
-                                Location location = task.getResult();
-                                // if location is not available then request for location
-                                if (location == null) {
-                                    requestNewLocationData();
-                                } else {
 
-                                    currentLng = location.getLongitude();
-                                    currentLat = location.getLatitude();
-                                    Toast.makeText(BuildingList.this, "Current location" + location.getLatitude() + ", " + location.getLongitude(), Toast.LENGTH_SHORT).show();
 
-                                }
-                            }
-                        }
-                );
-            } else {
-                Toast.makeText(this, "Turn on location", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-            }
-        } else {
-            requestPermissions();
-        }
-    }
-
-    // request to get the new current location if the user location is not available
-    @SuppressLint("MissingPermission")
-    private void requestNewLocationData() {
-
-        LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(0);
-        mLocationRequest.setFastestInterval(0);
-        mLocationRequest.setNumUpdates(1);
-
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mFusedLocationClient.requestLocationUpdates(
-                mLocationRequest, mLocationCallback,
-                Looper.myLooper()
-        );
-
-    }
-
-    // location call back to get the current location
-    private LocationCallback mLocationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            Location mLastLocation = locationResult.getLastLocation();
-            currentLat = mLastLocation.getLatitude();
-            currentLng = mLastLocation.getLongitude();
-            Toast.makeText(BuildingList.this, mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude(), Toast.LENGTH_SHORT).show();
-        }
-    };
-
-    //check permission
-    private boolean checkPermissions() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        return false;
-    }
-
-    // request user to allow permision
-    private void requestPermissions() {
-        ActivityCompat.requestPermissions(
-                this,
-                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
-                PERMISSION_ID
-        );
-    }
-
-    // check gps enable or not
-    private boolean isLocationEnabled() {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
-                LocationManager.NETWORK_PROVIDER
-        );
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_ID) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation();
-            }
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (checkPermissions()) {
-            getLastLocation();
-        }
-
-    }
 
 
 }

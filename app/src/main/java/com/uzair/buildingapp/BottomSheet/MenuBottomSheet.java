@@ -4,6 +4,7 @@ package com.uzair.buildingapp.BottomSheet;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
+import com.uzair.buildingapp.Building.UserListToAssignBuilding;
 import com.uzair.buildingapp.R;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
 import com.uzair.buildingapp.Utils.UrlsContract;
@@ -31,6 +33,8 @@ import com.uzair.buildingapp.Utils.UrlsContract;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -275,8 +279,11 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
     }
 
     // to add user details
-    private void addUserDetails() {
+    private void addUserDetails()
+    {
 
-
+        Intent intent = new Intent(getContext() , UserListToAssignBuilding.class);
+        intent.putExtra("access_token", token);
+        startActivity(intent);
     }
 }

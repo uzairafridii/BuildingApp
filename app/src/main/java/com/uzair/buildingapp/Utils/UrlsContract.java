@@ -9,4 +9,7 @@ public class UrlsContract
     public static final String CREATE_USER_URL = "http://172.105.63.7:1275/user/create";
 
     public static final String CREATE_LOG_URLS = "http://172.105.63.7:1275/detection/log/create";
+    public static final String Get_DETECTION_LOGS_URLS = "http://172.105.63.7:1275/detection/log/list";
+
+
 }
