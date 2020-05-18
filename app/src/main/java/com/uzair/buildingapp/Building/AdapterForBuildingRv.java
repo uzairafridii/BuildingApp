@@ -46,7 +46,7 @@ public class AdapterForBuildingRv extends RecyclerView.Adapter<AdapterForBuildin
             @Override
             public void onClick(View view) {
 
-                new MenuBottomSheet(model.getLat() , model.getLng(), model.getTokenKey())
+                new MenuBottomSheet(model.getTokenKey() , model.getGuid() , model.getId())
                         .show(((FragmentActivity)context).getSupportFragmentManager(), "menu sheet");
 
             }

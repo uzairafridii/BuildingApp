@@ -36,7 +36,7 @@ public class AdapterForLogRecycler extends RecyclerView.Adapter<AdapterForLogRec
     {
 
         final LogModel model = buildingModelList.get(position);
-      //  holder.name.setText(model.ge());
+        holder.name.setText(model.getBuilding().getName());
         holder.distance.setText(model.getDistance()+" km");
         holder.setImageView(model.getDetectionType());
 

@@ -418,6 +418,17 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/noLogFound"
+                    android:text="No Log Found"
+                    android:layout_marginTop="@dimen/margin_32"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/recentCommand"
+                    />
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
@@ -437,6 +448,8 @@
         app:itemIconTint="@color/textColor"
 
         />
+
+
 
 </androidx.drawerlayout.widget.DrawerLayout>
 

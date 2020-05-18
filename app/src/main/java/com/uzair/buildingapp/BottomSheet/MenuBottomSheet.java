@@ -25,6 +25,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
+import com.uzair.buildingapp.Building.MyCurrentLocation;
 import com.uzair.buildingapp.Building.UserListToAssignBuilding;
 import com.uzair.buildingapp.R;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
@@ -32,9 +33,6 @@ import com.uzair.buildingapp.Utils.UrlsContract;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -44,18 +42,21 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
 
     private ImageView addUser, addLog, edit;
     private double lat, lng;
-    private String token, selectedColor;
+    private String token, selectedColor , buildingGuid ;
+    private int uid;
     private View menuView;
     private ProgressDialog progressDialog;
 
     public MenuBottomSheet() {
     }
 
-    public MenuBottomSheet(double lat, double lng, String token) {
+    public MenuBottomSheet(String token , String buildingGuid , int uid) {
         // Required empty public constructor
-        this.lat = lat;
-        this.lng = lng;
         this.token = token;
+        this.buildingGuid = buildingGuid;
+        this.uid = uid;
+        Log.d("building guid", "MenuBottomSheet: "+buildingGuid);
+        Log.d("user guid", "MenuBottomSheet: "+uid);
     }
 
 
@@ -83,6 +84,10 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
         addLog.setOnClickListener(this);
         addUser.setOnClickListener(this);
         edit.setOnClickListener(this);
+
+        lat  = MyCurrentLocation.getCurrentLat();
+        lng  = MyCurrentLocation.getCurrentLng();
+        Toast.makeText(getContext(), lat+","+lng, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -99,12 +104,15 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
             }
             case R.id.edit: {
                 Toast.makeText(getContext(), "Edit click current location is " + lat + "\n" + lng, Toast.LENGTH_SHORT).show();
+                editBuildingDetails();
                 break;
             }
         }
     }
 
-    // add log details
+    /**
+     *  log  methods to add log on some building
+     */
     private void addLogDetails() {
 
         View colorView = LayoutInflater.from(getContext()).inflate(R.layout.detection_log_form, null);
@@ -213,7 +221,6 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
 
     }
 
-    /// to add color and all other details
     private void addLogColorData(final String color) {
 
 
@@ -228,7 +235,7 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
                 Log.d("deviceToken", "onSuccess: "+deviceToken);
 
 
-                final StringRequest logCreateRequest = new StringRequest(Request.Method.POST, UrlsContract.CREATE_LOG_URLS,
+                final StringRequest logCreateRequest = new StringRequest(Request.Method.POST, UrlsContract.CREATE_LOG_URL,
                         new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response)
@@ -248,16 +255,13 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
                     protected Map<String, String> getParams() throws AuthFailureError
                     {
                         Map<String, String> logData = new HashMap<>();
-                        String uniqueId = UUID.randomUUID().toString();
-                        logData.put("building_guid", uniqueId);
+                        logData.put("building_guid", buildingGuid);
                         logData.put("mobile_device_id", deviceToken);
                         logData.put("detection_decice_hash", deviceToken);
                         logData.put("status", "pending");
                         logData.put("lat", String.valueOf(lat));
                         logData.put("lng", String.valueOf(lng));
                         logData.put("detection_type", color);
-
-
                         return logData;
                     }
 
@@ -278,12 +282,22 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
 
     }
 
-    // to add user details
+
+    /**
+     *  add user or assign to user method below
+     */
     private void addUserDetails()
     {
 
         Intent intent = new Intent(getContext() , UserListToAssignBuilding.class);
         intent.putExtra("access_token", token);
+        intent.putExtra("building_key", buildingGuid);
         startActivity(intent);
+    }
+
+
+    private void editBuildingDetails()
+    {
+
     }
 }

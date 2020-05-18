@@ -38,6 +38,14 @@
         app:rippleColor="@color/white"
         />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/noBuildingFound"
+        android:text="No Building Found"
+        android:layout_centerInParent="true"
+        />
+
 
 
 </RelativeLayout>

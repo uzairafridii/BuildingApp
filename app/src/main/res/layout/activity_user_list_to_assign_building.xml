@@ -36,7 +36,13 @@
         app:rippleColor="@color/white"
         />
 
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/noUserFound"
+        android:text="No User Available"
+        android:layout_centerInParent="true"
+        />
 
 
 </RelativeLayout>

@@ -22,9 +22,22 @@
             android:layout_marginBottom="@dimen/margin_12"
             android:paddingLeft="@dimen/margin_12"
             android:paddingTop="@dimen/margin_12"
-
             >
 
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/addLogText"
+                android:text="Add Log!"
+                android:textColor="@color/textColor"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="@dimen/margin_16"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/skyBlue"
+                />
 
             <ImageView
                 android:clickable="true"
@@ -33,11 +46,11 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:src="@drawable/sky_blue"
-                android:layout_marginTop="@dimen/margin_12"
+                android:layout_marginTop="@dimen/margin_22"
                 android:layout_marginLeft="@dimen/margin_32"
                 android:backgroundTint="@color/textColor"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/addLogText" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -58,11 +71,11 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:src="@drawable/red"
-                android:layout_marginTop="@dimen/margin_12"
+                android:layout_marginTop="@dimen/margin_22"
                 android:layout_marginLeft="@dimen/margin_32"
                 android:backgroundTint="@color/textColor"
                 app:layout_constraintLeft_toRightOf="@id/skyBlue"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/addLogText"  />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -84,11 +97,11 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:src="@drawable/yellow"
-                android:layout_marginTop="@dimen/margin_12"
+                android:layout_marginTop="@dimen/margin_22"
                 android:layout_marginLeft="@dimen/margin_32"
                 android:backgroundTint="@color/textColor"
                 app:layout_constraintLeft_toRightOf="@id/red"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/addLogText"  />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -110,11 +123,11 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:src="@drawable/circle"
-                android:layout_marginTop="@dimen/margin_12"
+                android:layout_marginTop="@dimen/margin_22"
                 android:layout_marginLeft="@dimen/margin_32"
                 android:backgroundTint="@color/textColor"
                 app:layout_constraintLeft_toRightOf="@+id/yellow"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/addLogText"  />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

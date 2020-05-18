@@ -57,7 +57,7 @@ public class BuildingModel {
         return lat;
     }
 
-    public void setLat(double lat) {
+    public void setLatValue(double lat) {
         this.lat = lat;
     }
 
@@ -65,7 +65,7 @@ public class BuildingModel {
         return lng;
     }
 
-    public void setLng(double lng) {
+    public void setLngValue(double lng) {
         this.lng = lng;
     }
 

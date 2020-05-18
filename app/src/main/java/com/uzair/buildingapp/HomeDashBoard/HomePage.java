@@ -1,14 +1,11 @@
 package com.uzair.buildingapp.HomeDashBoard;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,8 +15,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -31,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -48,7 +44,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 import com.uzair.buildingapp.Building.BuildingList;
-import com.uzair.buildingapp.Building.BuildingModel;
+import com.uzair.buildingapp.Building.MyCurrentLocation;
 import com.uzair.buildingapp.LoginAndSignUp.LoginActivity;
 import com.uzair.buildingapp.R;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
@@ -67,6 +63,7 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
 {
 
     public static final int REQUEST_CODE = 7;
+    private TextView noLogFound;
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -78,6 +75,7 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
     private double logLat , logLng , currentLat , currentLng;
     private AdapterForLogRecycler adapter;
     private FusedLocationProviderClient mFusedLocationClient;
+    private TextView logLocation , logDistance , logTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,12 +83,14 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
         setContentView(R.layout.activity_home_page);
 
         initViews();
-        getAllLogs();
     }
 
 
     private void initViews()
     {
+
+        noLogFound = findViewById(R.id.noLogFound);
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         token = getIntent().getStringExtra("loginToken");
         Log.d("tokenInBuildingList", "onNavigationItemSelected: "+token);
@@ -98,16 +98,104 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
         setSupportActionBar(toolbar);
         drawerLayout();
 
+        logLocation = findViewById(R.id.location);
+        logDistance = findViewById(R.id.distanceText);
+        logTime = findViewById(R.id.timeText);
+
         logRecyclerView = findViewById(R.id.logRecyclerView);
         layoutManager = new LinearLayoutManager(this);
-        layoutManager.setStackFromEnd(true);
-        layoutManager.setReverseLayout(true);
         logRecyclerView.setLayoutManager(layoutManager);
 
         logModelList = new ArrayList<>();
         adapter = new AdapterForLogRecycler(this, logModelList);
      }
 
+
+    // get list of log details and show in adapter
+    private void getAllLogs() {
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, UrlsContract.Get_DETECTION_LOGS_URL,
+                new Response.Listener<String>() {
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("buildingList", "onResponse: " + response);
+                        noLogFound.setVisibility(View.INVISIBLE);
+                        Gson gson = new Gson();
+                        try {
+
+                            // get the json array and store it in logmodel type list
+                            JSONObject jsonResponse = new JSONObject(response);
+                            JSONObject result = jsonResponse.getJSONObject("response");
+                            Log.d("jsonResultBuilding", "onResponse: " + result.getJSONArray("data"));
+                            JSONArray jArray = result.getJSONArray("data");
+
+                            // to get all one by one
+                            for (int i = 0; i < jArray.length(); i++) {
+                                JSONObject json_data = jArray.getJSONObject(i);
+                                LogModel rvdata = gson.fromJson(String.valueOf(json_data), LogModel.class);
+                                Log.d("gsonData", "onResponse: " + rvdata);
+
+                                logLng= rvdata.getGeoCordinate().getCoordinates().get(0);
+                                logLat = rvdata.getGeoCordinate().getCoordinates().get(1);
+
+                                Location currentLocation = new Location("currentLocation");
+                                currentLocation.setLatitude(currentLat);
+                                currentLocation.setLongitude(currentLng);
+
+                                Location destinationLocation = new Location("buildingLocation");
+                                destinationLocation.setLatitude(logLat);
+                                destinationLocation.setLongitude(logLng);
+                                double distance = currentLocation.distanceTo(destinationLocation) / 1000;
+                                double distanceInKm = (double) Math.round(distance * 100) / 100;
+
+                                MyCurrentLocation.setLocation(currentLat , currentLng);
+                                rvdata.setLat(MyCurrentLocation.getCurrentLat());
+                                rvdata.setLng(MyCurrentLocation.getCurrentLng());
+
+                                rvdata.setDistance(distanceInKm);
+
+                                Toast.makeText(HomePage.this, distanceInKm + "", Toast.LENGTH_SHORT).show();
+                                logModelList.add(rvdata);
+                                logRecyclerView.setAdapter(adapter);
+                                Log.d("jsonDataList", "onResponse: " + json_data);
+
+                                if(i == 0 ) {
+                                    logDistance.setText(distanceInKm+" km");
+                                    logLocation.setText(rvdata.getBuilding().getName());
+                                }
+
+
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("Error", "buildingList: Error" + error.getMessage());
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+
+                HashMap<String, String> tokenData = new HashMap<>();
+                tokenData.put("Authorization", "Bearer " + token);
+                return tokenData;
+            }
+        };
+
+        MySingleton.getInstance(HomePage.this).addToRequestQueue(stringRequest);
+
+
+    }
+
+
+    /**
+     *  drawer layout and navigation menu methods are below
+     */
 
     private void drawerLayout()
     {
@@ -169,77 +257,11 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
 
 
 
-    // get list of log details and show in adapter
-    private void getAllLogs() {
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, UrlsContract.Get_DETECTION_LOGS_URLS,
-                new Response.Listener<String>() {
-                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d("buildingList", "onResponse: " + response);
-                        Gson gson = new Gson();
-                        try {
-
-                            // get the json array and store it in logmodel type list
-                            JSONObject jsonResponse = new JSONObject(response);
-                            JSONObject result = jsonResponse.getJSONObject("response");
-                            Log.d("jsonResultBuilding", "onResponse: " + result.getJSONArray("data"));
-                            JSONArray jArray = result.getJSONArray("data");
-
-                            // to get all one by one
-                            for (int i = 0; i < jArray.length(); i++) {
-                                JSONObject json_data = jArray.getJSONObject(i);
-                                LogModel rvdata = gson.fromJson(String.valueOf(json_data), LogModel.class);
-                                Log.d("gsonData", "onResponse: " + rvdata);
-
-                                logLng= rvdata.getGeoCordinate().getCoordinates().get(0);
-                                logLat = rvdata.getGeoCordinate().getCoordinates().get(1);
-
-                                Location currentLocation = new Location("currentLocation");
-                                currentLocation.setLatitude(currentLat);
-                                currentLocation.setLongitude(currentLng);
-
-                                Location destinationLocation = new Location("buildingLocation");
-                                destinationLocation.setLatitude(logLat);
-                                destinationLocation.setLongitude(logLng);
-                                double distance = currentLocation.distanceTo(destinationLocation) / 1000;
-                                double distanceInKm = (double) Math.round(distance * 100) / 100;
-
-                                rvdata.setLat(currentLat);
-                                rvdata.setLng(currentLng);
-                                rvdata.setDistance(distanceInKm);
-
-                                Toast.makeText(HomePage.this, distanceInKm + "", Toast.LENGTH_SHORT).show();
-                                logModelList.add(rvdata);
-                                logRecyclerView.setAdapter(adapter);
-                                Log.d("jsonDataList", "onResponse: " + json_data);
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d("Error", "buildingList: Error" + error.getMessage());
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-
-                HashMap<String, String> tokenData = new HashMap<>();
-                tokenData.put("Authorization", "Bearer " + token);
-                return tokenData;
-            }
-        };
-
-        MySingleton.getInstance(HomePage.this).addToRequestQueue(stringRequest);
-
-
-    }
-
+    /**
+     * Google location methods below to get the user current
+     * location
+     */
 
     // to ge the last location of user
     @SuppressLint("MissingPermission")
@@ -255,10 +277,12 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
                                 // if location is not available then request for location
                                 if (location == null) {
                                     requestNewLocationData();
+                                    getAllLogs();
                                 } else {
 
                                     currentLng = location.getLongitude();
                                     currentLat = location.getLatitude();
+                                    getAllLogs();
                                     Toast.makeText(HomePage.this, "Current location" + location.getLatitude() + ", " + location.getLongitude(), Toast.LENGTH_SHORT).show();
 
                                 }
@@ -345,6 +369,7 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
         super.onResume();
         if (checkPermissions()) {
             getLastLocation();
+
         }
 
     }

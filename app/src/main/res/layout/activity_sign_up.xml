@@ -51,7 +51,7 @@
                 />
 
             <EditText
-                android:id="@+id/userName"
+                android:id="@+id/userNameInBuildingRegsiteration"
                 android:layout_width="match_parent"
                 android:layout_height="45dp"
                 android:background="@drawable/ed_bg"
@@ -71,7 +71,7 @@
                 />
 
             <EditText
-                android:id="@+id/phoneNumber"
+                android:id="@+id/phoneNumberInBuildingRegistration"
                 android:layout_width="match_parent"
                 android:layout_height="45dp"
                 android:background="@drawable/ed_bg"
@@ -87,11 +87,11 @@
                 android:paddingRight="@dimen/margin_12"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/userName"
+                app:layout_constraintTop_toBottomOf="@id/userNameInBuildingRegsiteration"
                 />
 
             <EditText
-                android:id="@+id/countryCode"
+                android:id="@+id/countryCodeInBuildingRegistration"
                 android:layout_width="match_parent"
                 android:layout_height="45dp"
                 android:background="@drawable/ed_bg"
@@ -107,11 +107,11 @@
                 android:paddingRight="@dimen/margin_12"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/phoneNumber"
+                app:layout_constraintTop_toBottomOf="@id/phoneNumberInBuildingRegistration"
                 />
 
             <EditText
-                android:id="@+id/email"
+                android:id="@+id/emailInBuildingRegistration"
                 android:layout_width="match_parent"
                 android:layout_height="45dp"
                 android:background="@drawable/ed_bg"
@@ -127,11 +127,11 @@
                 android:paddingRight="@dimen/margin_12"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/countryCode"
+                app:layout_constraintTop_toBottomOf="@id/countryCodeInBuildingRegistration"
                 />
 
             <EditText
-                android:id="@+id/password"
+                android:id="@+id/passwordInBuildingRegistration"
                 android:layout_width="match_parent"
                 android:layout_height="45dp"
                 android:background="@drawable/ed_bg"
@@ -148,8 +148,71 @@
                 android:paddingRight="@dimen/margin_12"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/email"
+                app:layout_constraintTop_toBottomOf="@id/emailInBuildingRegistration"
                 />
+
+            <TextView
+                android:onClick="pickDateOfBirth"
+                android:id="@+id/dateOfBirthInBuildingRegistration"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:background="@drawable/ed_bg"
+                android:text="2018-01-15"
+                android:gravity="left|center"
+                android:elevation="@dimen/margin_12"
+                android:paddingLeft="@dimen/margin_16"
+                android:layout_marginLeft="@dimen/margin_16"
+                android:layout_marginRight="@dimen/margin_16"
+                android:layout_marginTop="@dimen/margin_22"
+                android:inputType="date"
+                android:drawableLeft="@drawable/ic_date_range_black_24dp"
+                android:drawablePadding="@dimen/margin_6"
+                android:paddingRight="@dimen/margin_12"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/passwordInBuildingRegistration"
+                />
+
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/genderRadioGroup"
+                android:orientation="horizontal"
+                android:weightSum="3"
+                android:gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/margin_16"
+                android:layout_marginRight="@dimen/margin_16"
+                android:layout_marginTop="@dimen/margin_22"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/dateOfBirthInBuildingRegistration"
+                >
+
+                <RadioButton
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/male"
+                    android:layout_weight="2"
+                    android:text="Male"
+                    android:textColor="@color/textColor"
+                    android:buttonTint="@color/textColor"
+                    android:layout_gravity="left"
+                    />
+                <RadioButton
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/female"
+                    android:text="Female"
+                    android:textColor="@color/textColor"
+                    android:buttonTint="@color/textColor"
+                    android:layout_gravity="right"
+                    />
+
+
+            </RadioGroup>
+
 
             <Button
                 android:onClick="registerUser"
@@ -169,7 +232,7 @@
                 android:layout_marginTop="@dimen/margin_32"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/password"
+                app:layout_constraintTop_toBottomOf="@+id/genderRadioGroup"
                 />
 
             <TextView
