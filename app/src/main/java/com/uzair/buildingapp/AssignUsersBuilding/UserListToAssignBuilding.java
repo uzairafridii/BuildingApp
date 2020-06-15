@@ -1,31 +1,40 @@
-package com.uzair.buildingapp.Building;
+package com.uzair.buildingapp.AssignUsersBuilding;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.UserManager;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
-import com.uzair.buildingapp.HomeDashBoard.HomePage;
-import com.uzair.buildingapp.LoginAndSignUp.SignUp;
 import com.uzair.buildingapp.R;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
 import com.uzair.buildingapp.Utils.UrlsContract;
@@ -34,23 +43,35 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class UserListToAssignBuilding extends AppCompatActivity {
 
 
+    public static final int PICK_IMAGE_REQUEST = 1;
     private TextView noUserAvailable;
     private RecyclerView userListRecycler;
     private LinearLayoutManager layoutManager;
     private Toolbar toolbar;
-    private String token , companyId , buildingGuid;
+    private String token , companyId , buildingGuid, image;
     private ProgressDialog progressDialog;
-    private List<UsersModel> usersModelList;
+    private List<AssignUsersModel> assignUsersModelList;
     private AdapterForUserListRecycler adapterForUserListRecycler;
+    private CircleImageView imageView;
+    private Bitmap bitmap, lastBitmap = null;
+    String[] permissions = new String[]{
+            Manifest.permission.INTERNET,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    };
 
 
 
@@ -61,12 +82,13 @@ public class UserListToAssignBuilding extends AppCompatActivity {
 
         initViews();
         getCompanyId();
+        getCompanyUserList();
     }
 
 
     private void initViews()
     {
-         usersModelList = new ArrayList<>();
+        assignUsersModelList = new ArrayList<>();
         noUserAvailable = findViewById(R.id.noUserFound);
         progressDialog = new ProgressDialog(this , R.style.MyAlertDialogStyle);
         token = getIntent().getStringExtra("access_token");
@@ -76,6 +98,8 @@ public class UserListToAssignBuilding extends AppCompatActivity {
 
         toolbar = findViewById(R.id.userListToolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setTitle("Users List");
 
         userListRecycler = findViewById(R.id.usersListRecycler);
         layoutManager = new LinearLayoutManager(this);
@@ -83,7 +107,7 @@ public class UserListToAssignBuilding extends AppCompatActivity {
         layoutManager.setReverseLayout(true);
         userListRecycler.setLayoutManager(layoutManager);
 
-        adapterForUserListRecycler = new AdapterForUserListRecycler(  this , usersModelList);
+        adapterForUserListRecycler = new AdapterForUserListRecycler(  this ,assignUsersModelList);
     }
 
     // fab clic to add new user
@@ -102,14 +126,29 @@ public class UserListToAssignBuilding extends AppCompatActivity {
         email = addNewUserFormView.findViewById(R.id.emailInBuildingRegistration);
         country = addNewUserFormView.findViewById(R.id.countryCodeInBuildingRegistration);
 
+        imageView = addNewUserFormView.findViewById(R.id.selectImage);
 
+        Button registerBtn,addImageBtn;
+        registerBtn = addNewUserFormView.findViewById(R.id.registerBtnInBuildingRegistration);
+        addImageBtn = addNewUserFormView.findViewById(R.id.addUserImageBtn);
 
-        Button registerBtn = addNewUserFormView.findViewById(R.id.registerBtnInBuildingRegistration);
+        addImageBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(checkPermissions()) {
+
+                    startGalleryIntent();
+                }
+            }
+        });
 
 
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                dialog.dismiss();
 
                 final String userName  = name.getText().toString();
                 final String userPhone = phone.getText().toString();
@@ -117,12 +156,12 @@ public class UserListToAssignBuilding extends AppCompatActivity {
                 final String userPassword = String.valueOf(UUID.randomUUID());
                 final String userCountryCode = country.getText().toString();
 
-               createNewUser(userName , userPhone,  userEmail , userPassword , userCountryCode);
+               createNewUser(userName , userPhone,  userEmail , userPassword , userCountryCode , image);
 
                 Log.d("registrationData", "onClick: "+userName+""+userPassword+""
                         +userPhone+""+userCountryCode+""+userEmail);
 
-                dialog.dismiss();
+
 
 
 
@@ -133,55 +172,102 @@ public class UserListToAssignBuilding extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri filePath = data.getData();
+            Log.d("uri", "onActivityResult: "+filePath);
+
+            try {
+
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
+
+
+                lastBitmap = bitmap;
+                if(lastBitmap != null) {//encoding image to string
+                    imageView.setVisibility(View.VISIBLE);
+                    imageView.setImageBitmap(lastBitmap);
+                    image = getStringImage(lastBitmap);
+                    Log.d("imageString", "onActivityResult: " + image);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public String getStringImage(Bitmap bmp) {
+        //converting image to base64 string
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] imageBytes = baos.toByteArray();
+            final String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+            return imageString;
+
+    }
+
+    public byte[] getFileDataFromDrawable(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 80, byteArrayOutputStream);
+        return byteArrayOutputStream.toByteArray();
+    }
 
     // add user detail to create new account
     private void createNewUser(final String userName , final String userPhone , final String userEmail
-            , final String userPassword, final String userCountryCode)
+            , final String userPassword, final String userCountryCode , String imageUrl)
     {
 
-        if(!userName.isEmpty() && !userPhone.isEmpty() && !userEmail.isEmpty() && !userPassword.isEmpty()
-                && !userCountryCode.isEmpty()) {
+        if(!userName.isEmpty() && !userPhone.isEmpty() && !userEmail.isEmpty()
+                && !userPassword.isEmpty()
+                && !userCountryCode.isEmpty()
+                && imageUrl != null) {
 
 
             progressDialog.setMessage("Please wait");
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.show();
 
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, UrlsContract.CREATE_USER_URL,
-                    new Response.Listener<String>() {
+            //our custom volley request
+            VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST,
+                    UrlsContract.CREATE_USER_URL,
+                    new Response.Listener<NetworkResponse>() {
                         @Override
-                        public void onResponse(String response) {
-                            // Display the first 500 characters of the response string.
-                            Log.d("createUserResponse", "onResponse: " + response);
-                            Toast.makeText(UserListToAssignBuilding.this, "Successfully Register ", Toast.LENGTH_LONG).show();
+                        public void onResponse(NetworkResponse response) {
+                            Log.e("serverResult", "status code: " + response.statusCode);
+                            String resultResponse = new String(response.data);
+                            try {
+
+                                JSONObject result = new JSONObject(resultResponse);
+                                String name = result.getString("name");
+                                Log.e("severName", name + " " );
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                Log.d("CatchError", "onResponse: "+e.getMessage());
+                            }
+
+                            Toast.makeText(UserListToAssignBuilding.this, "Successfully added", Toast.LENGTH_SHORT).show();
                             progressDialog.dismiss();
-
-
                         }
-                    }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
 
-                    String responseBody = null;
-                    try {
-
-                        responseBody = new String(error.networkResponse.data, "utf-8");
-                        JSONObject data = new JSONObject(responseBody);
-                        String resultError = data.get("error").toString();
-                        Log.d("resultErrorInSignUp", "onResponse: " + resultError);
-                        Toast.makeText(UserListToAssignBuilding.this, resultError, Toast.LENGTH_LONG).show();
-                        progressDialog.dismiss();
+                            Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.d("ErrorMessageMultipart", "onErrorResponse: "+error.getCause()+"\n"+error.getMessage());
+                            progressDialog.dismiss();
+                        }
+                    }) {
 
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Log.d("jsonError", "onResponse: " + e.getMessage());
-                        progressDialog.dismiss();
-                    }
-
-                }
-            }) {
-
+                /*
+                 * If you want to add more parameters with the image
+                 * you can do it here
+                 * here we have parameters with the image
+                 * which is tags
+                 * */
                 @Override
                 protected Map<String, String> getParams() throws AuthFailureError {
 
@@ -207,30 +293,40 @@ public class UserListToAssignBuilding extends AppCompatActivity {
 
                     data.put("company_id", companyId);
 
+                    data.put("building_guid", buildingGuid);
 
                     return data;
                 }
 
+
                 @Override
                 public Map<String, String> getHeaders() throws AuthFailureError {
-
                     HashMap<String, String> tokenData = new HashMap<>();
                     tokenData.put("Authorization", "Bearer " + token);
 
                     return tokenData;
                 }
+
+                /*
+                 * Here we are passing image by renaming it with a unique name
+                 * */
+                @Override
+                protected Map<String, DataPart> getByteData() {
+                    Map<String, DataPart> params = new HashMap<>();
+                    long imagename = System.currentTimeMillis();
+
+                    params.put("avatar", new DataPart(imagename + ".jpg", getFileDataFromDrawable(bitmap)));
+                    return params;
+                }
+
             };
 
-            MySingleton.getInstance(UserListToAssignBuilding.this).addToRequestQueue(stringRequest);
-
-
+            //adding the request to volley
+            MySingleton.getInstance(this).addToRequestQueue(volleyMultipartRequest);
         }
         else
         {
-            Toast.makeText(UserListToAssignBuilding.this, userName+","+userPassword+""
-                    +userPhone+""+userCountryCode+""+userEmail, Toast.LENGTH_SHORT).show();
-
-            Toast.makeText(UserListToAssignBuilding.this, "Required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(UserListToAssignBuilding.this, "Sorry! Image and all fields are required", Toast.LENGTH_LONG).show();
         }
 
 
@@ -305,11 +401,11 @@ public class UserListToAssignBuilding extends AppCompatActivity {
                         JSONObject json_data = jArray.getJSONObject(i);
 
                       //  String uid = json_data.get("guid").toString();
-                        UsersModel userList = gson.fromJson(String.valueOf(json_data), UsersModel.class);
-                        usersModelList.add(userList);
+                        AssignUsersModel userList = gson.fromJson(String.valueOf(json_data), AssignUsersModel.class);
+                        assignUsersModelList.add(userList);
                         userListRecycler.setAdapter(adapterForUserListRecycler);
 
-                        Log.d("jsonDataList", "onResponse: " + usersModelList);
+                        Log.d("jsonDataList", "onResponse: " + assignUsersModelList);
                     }
 
 
@@ -345,12 +441,44 @@ public class UserListToAssignBuilding extends AppCompatActivity {
     }
 
 
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        getCompanyUserList();
-
-
+    // check runtime storage permission
+    private boolean checkPermissions() {
+        int result;
+        List<String> listPermissionsNeeded = new ArrayList<>();
+        for (String p : permissions) {
+            result = ContextCompat.checkSelfPermission(this, p);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(p);
+            }
+        }
+        if (!listPermissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), 100);
+            return false;
+        }
+        return true;
     }
+
+    // check permission is granted or not
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == 100) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                startGalleryIntent();
+            }
+            return;
+        }
+    }
+
+    // galler intent to select image
+    private void startGalleryIntent()
+    {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_REQUEST);
+    }
+
+
 }

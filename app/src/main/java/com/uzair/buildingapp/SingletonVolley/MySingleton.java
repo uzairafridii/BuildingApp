@@ -42,9 +42,10 @@ public class MySingleton
     public<T> void addToRequestQueue(Request<T> request){
         // Add the specified request to the request queue
         request.setRetryPolicy(new DefaultRetryPolicy(
-                30000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                0,
+                -1,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+       // new DefaultRetryPolicy(0, -1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
         getRequestQueue().add(request);
     }
 }

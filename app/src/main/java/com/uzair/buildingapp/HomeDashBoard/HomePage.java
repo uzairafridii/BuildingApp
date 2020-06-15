@@ -14,6 +14,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -41,10 +42,11 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 import com.uzair.buildingapp.Building.BuildingList;
-import com.uzair.buildingapp.Building.MyCurrentLocation;
+import com.uzair.buildingapp.Utils.MyCurrentLocation;
 import com.uzair.buildingapp.LoginAndSignUp.LoginActivity;
 import com.uzair.buildingapp.R;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
@@ -76,6 +78,8 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
     private AdapterForLogRecycler adapter;
     private FusedLocationProviderClient mFusedLocationClient;
     private TextView logLocation , logDistance , logTime;
+    private CollapsingToolbarLayout collapsingToolbarLayout;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,16 +87,19 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
         setContentView(R.layout.activity_home_page);
 
         initViews();
+
     }
 
 
     private void initViews()
     {
-
         noLogFound = findViewById(R.id.noLogFound);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         token = getIntent().getStringExtra("loginToken");
+        sharedPreferences = getSharedPreferences(LoginActivity.USER_DETAILS , MODE_PRIVATE);
+
+
         Log.d("tokenInBuildingList", "onNavigationItemSelected: "+token);
         toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
@@ -108,6 +115,8 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
 
         logModelList = new ArrayList<>();
         adapter = new AdapterForLogRecycler(this, logModelList);
+
+        collapsingToolbarLayout = findViewById(R.id.collapsingToolbar);
      }
 
 
@@ -120,6 +129,10 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
                     @Override
                     public void onResponse(String response) {
                         Log.d("buildingList", "onResponse: " + response);
+                        if(response == null)
+                        {
+                            return;
+                        }
                         noLogFound.setVisibility(View.INVISIBLE);
                         Gson gson = new Gson();
                         try {
@@ -130,8 +143,12 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
                             Log.d("jsonResultBuilding", "onResponse: " + result.getJSONArray("data"));
                             JSONArray jArray = result.getJSONArray("data");
 
+                            if(jArray.length() > 0)
+                            {
+
                             // to get all one by one
-                            for (int i = 0; i < jArray.length(); i++) {
+                            for (int i = 0; i < jArray.length(); i++)
+                            {
                                 JSONObject json_data = jArray.getJSONObject(i);
                                 LogModel rvdata = gson.fromJson(String.valueOf(json_data), LogModel.class);
                                 Log.d("gsonData", "onResponse: " + rvdata);
@@ -155,17 +172,23 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
 
                                 rvdata.setDistance(distanceInKm);
 
-                                Toast.makeText(HomePage.this, distanceInKm + "", Toast.LENGTH_SHORT).show();
                                 logModelList.add(rvdata);
                                 logRecyclerView.setAdapter(adapter);
                                 Log.d("jsonDataList", "onResponse: " + json_data);
 
-                                if(i == 0 ) {
+                                if(i == 0 && rvdata.getBuilding().getName() !=null) {
+
                                     logDistance.setText(distanceInKm+" km");
                                     logLocation.setText(rvdata.getBuilding().getName());
                                 }
 
 
+                            }
+
+                            }
+                            else
+                            {
+                                Log.d("arraysizeinlog", "onRespone"+"Array empty");
                             }
 
                         } catch (JSONException e) {
@@ -209,11 +232,6 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
         drawerToggle.syncState();
     }
 
-    @Override
-    public void onBackPressed() {
-        startActivity(new Intent(this , LoginActivity.class));
-        this.finish();
-    }
 
     // toggle of navigation drawer
     @Override
@@ -241,22 +259,36 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
     {
         switch (menuItem.getItemId())
         {
-            case R.id.building:
-            {
-                Log.d("tokenInBuildingList", "onNavigationItemSelected: "+token);
-                Intent buildingIntent = new Intent(this , BuildingList.class);
-                buildingIntent.putExtra("loginToken" , token);
+            case R.id.building: {
+                Log.d("tokenInBuildingList", "onNavigationItemSelected: " + token);
+                Intent buildingIntent = new Intent(this, BuildingList.class);
+                buildingIntent.putExtra("loginToken", token);
                 startActivity(buildingIntent);
                 break;
 
+            }
+
+            case R.id.dashboard:
+            {
+
+                break;
+            }
+
+            case R.id.logOut:
+            {
+                SharedPreferences.Editor edit = sharedPreferences.edit();
+                edit.putString("userStatus","offline");
+                edit.commit();
+                edit.apply();
+
+                startActivity(new Intent(this , LoginActivity.class));
+                this.finish();
+                break;
             }
         }
 
         return false;
     }
-
-
-
 
     /**
      * Google location methods below to get the user current
@@ -283,7 +315,6 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
                                     currentLng = location.getLongitude();
                                     currentLat = location.getLatitude();
                                     getAllLogs();
-                                    Toast.makeText(HomePage.this, "Current location" + location.getLatitude() + ", " + location.getLongitude(), Toast.LENGTH_SHORT).show();
 
                                 }
                             }
@@ -324,7 +355,6 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
             Location mLastLocation = locationResult.getLastLocation();
             currentLat = mLastLocation.getLatitude();
             currentLng = mLastLocation.getLongitude();
-            Toast.makeText(HomePage.this, mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude(), Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -367,15 +397,27 @@ public class HomePage extends AppCompatActivity implements NavigationView.OnNavi
     @Override
     public void onResume() {
         super.onResume();
-        if (checkPermissions()) {
             getLastLocation();
-
-        }
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+       // sharedPreferences = getSharedPreferences(LoginActivity.USER_DETAILS , MODE_PRIVATE);
+        collapsingToolbarLayout.setTitle(sharedPreferences.getString("userName", "")+" welcome here!");
+        String status = sharedPreferences.getString("userStatus", "");
+        token = sharedPreferences.getString("token","null");
+
+        if(!status.equals("online"))
+        {
+          startActivity(new Intent(HomePage.this , LoginActivity.class));
+          this.finish();
+        }
 
 
+    }
 
 }
 

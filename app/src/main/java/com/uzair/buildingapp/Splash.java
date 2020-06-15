@@ -3,6 +3,7 @@ package com.uzair.buildingapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -13,6 +14,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.uzair.buildingapp.HomeDashBoard.HomePage;
 import com.uzair.buildingapp.LoginAndSignUp.LoginActivity;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
 import com.uzair.buildingapp.Utils.UrlsContract;
@@ -25,6 +27,8 @@ import static java.lang.Thread.sleep;
 public class Splash extends AppCompatActivity {
 
     private String key = null;
+    private SharedPreferences saveKeyPref;
+    private SharedPreferences.Editor editor;
 
 
     @Override
@@ -42,24 +46,23 @@ public class Splash extends AppCompatActivity {
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                // Display the first 500 characters of the response string.
-
 
                                 Log.d("jsonResult", "onResponse: "+response);
-
-
                                 JSONObject  jsonObject = null;
                                 try {
                                     jsonObject = new JSONObject(response);
 
-
                                     key = jsonObject.get("key").toString();
                                     Log.d("key", "onResponse: "+key);
 
-
-                                    Intent intent = new Intent(Splash.this , LoginActivity.class);
-                                    intent.putExtra("key" , key);
-                                    startActivity(intent);
+                                    // store greeting key
+                                    saveKeyPref = getSharedPreferences(LoginActivity.USER_DETAILS, MODE_PRIVATE);
+                                    editor = saveKeyPref.edit();
+                                    editor.putString("key", key);
+                                    editor.commit();
+                                    editor.apply();
+                                    // move to home page
+                                    startActivity(new Intent(Splash.this , HomePage.class));
                                     Splash.this.finish();
 
 
@@ -83,17 +86,6 @@ public class Splash extends AppCompatActivity {
 
             }
         }, 1 * 1000);
-
-
-
-
-
-
-
-
-
-
-
 
     }
 }

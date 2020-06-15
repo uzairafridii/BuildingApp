@@ -1,4 +1,4 @@
-package com.uzair.buildingapp.Building;
+package com.uzair.buildingapp.Utils;
 
 public class MyCurrentLocation
 {

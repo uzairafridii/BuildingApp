@@ -1,6 +1,5 @@
 package com.uzair.buildingapp.Building;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,11 +29,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.uzair.buildingapp.LoginAndSignUp.SignUp;
 import com.uzair.buildingapp.R;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
+import com.uzair.buildingapp.Utils.MyCurrentLocation;
 import com.uzair.buildingapp.Utils.UrlsContract;
 
 import org.json.JSONArray;
@@ -53,6 +49,7 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
     private TextView noBuildingFound;
     private String[] statusArray = {"Approve", "Pending"};
     private List<String> userIdList = new ArrayList<>();
+    private List<String> userNameList = new ArrayList<>();
     private List<String> companyIdList = new ArrayList<>();
     private List<String> companyNamesList = new ArrayList<>();
     private RecyclerView buildingListRecycler;
@@ -76,7 +73,7 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
         setTitle("Building List");
 
         initViews();
-
+        getAllBuildingsData();
 
     }
 
@@ -86,7 +83,6 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
         noBuildingFound = findViewById(R.id.noBuildingFound);
         currentLat = MyCurrentLocation.getCurrentLat();
         currentLng = MyCurrentLocation.getCurrentLng();
-        Toast.makeText(this, currentLat + "," + currentLng, Toast.LENGTH_SHORT).show();
         progressDialog = new ProgressDialog(this, R.style.MyAlertDialogStyle);
 
         token = getIntent().getStringExtra("loginToken");
@@ -94,6 +90,7 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
 
         toolbar = findViewById(R.id.buildingListToolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         buildingListRecycler = findViewById(R.id.buildingListRecycler);
         layoutManager = new LinearLayoutManager(this);
@@ -129,7 +126,7 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
 
         contactPersonId = formView.findViewById(R.id.contactPersonId);
         contactPersonId.setOnItemSelectedListener(this);
-        setAdapter(contactPersonId, userIdList);
+        setAdapter(contactPersonId, userNameList);
 
         companyId = formView.findViewById(R.id.companyGuid);
         companyId.setOnItemSelectedListener(this);
@@ -230,10 +227,8 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onResume() {
         super.onResume();
-        getAllBuildingsData();
         getUsersUid();
         getCompanies();
-
     }
 
     @Override
@@ -245,12 +240,12 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
         else if(adapterView.getId() == R.id.companyGuid)
         {
             buildingCompany = companyIdList.get(adapterView.getSelectedItemPosition());
-            Toast.makeText(this, buildingCompany, Toast.LENGTH_SHORT).show();
             Log.d("buildingContactPerson", "onItemSelected: "+buildingCompany);
         }
         else if(adapterView.getId() == R.id.contactPersonId)
         {
-            buildingContactPerson = adapterView.getItemAtPosition(i).toString();
+            buildingContactPerson = userIdList.get((adapterView.getSelectedItemPosition()));
+            Log.d("buildingContactPerson", "onItemSelected: "+buildingContactPerson);
         }
     }
     @Override
@@ -274,6 +269,10 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
                     @Override
                     public void onResponse(String response) {
                         Log.d("buildingList", "onResponse: " + response);
+                        if(response == null)
+                        {
+                            return;
+                        }
                         noBuildingFound.setVisibility(View.INVISIBLE);
                         Gson gson = new Gson();
                         try {
@@ -306,7 +305,6 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
                                 rvdata.setDistance(distanceInKm);
                                 rvdata.setTokenKey(token);
 
-                                Toast.makeText(BuildingList.this, distanceInKm + "", Toast.LENGTH_SHORT).show();
                                 buildingArrayList.add(rvdata);
                                 buildingListRecycler.setAdapter(adapter);
                                 Log.d("jsonDataList", "onResponse: " + json_data);
@@ -359,7 +357,9 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
                                 JSONObject json_data = jArray.getJSONObject(i);
 
                                 String uid = json_data.get("guid").toString();
+                                String userName = json_data.get("name").toString();
                                 userIdList.add(uid);
+                                userNameList.add(userName);
 
                                 Log.d("jsonDataList", "onResponse: " + uid);
                             }
@@ -387,7 +387,7 @@ public class BuildingList extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-
+    // get companies details
     private void getCompanies()
     {
 

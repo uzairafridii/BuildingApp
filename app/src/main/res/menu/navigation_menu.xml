@@ -23,4 +23,11 @@
         android:icon="@drawable/ic_settings_black_24dp"
         />
 
+    <item
+        android:id="@+id/logOut"
+        android:title="Logout"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_exit_to_app_black_24dp"
+        />
+
 </menu>

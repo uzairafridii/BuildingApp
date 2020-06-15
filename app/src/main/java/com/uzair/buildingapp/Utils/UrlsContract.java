@@ -14,6 +14,8 @@ public class UrlsContract
 
     public static final String GET_USERS_UID = "http://172.105.63.7:1275/own/user";
     public static final String GET_USERS_COMPANIES = "http://172.105.63.7:1275/whoami";
+    public static final String UPDATE_USER_DEVICE_TOKEN = "http://172.105.63.7:1275/user/update/";
+    public static final String UPDATE_BUILDING_DETAILS = "http://172.105.63.7:1275/building/update/";
 
 
 

@@ -1,4 +1,4 @@
-package com.uzair.buildingapp.Building;
+package com.uzair.buildingapp.AssignUsersBuilding;
 
 
 import com.google.gson.annotations.Expose;
@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class UsersModel {
+public class AssignUsersModel {
 
     @SerializedName("id")
     @Expose

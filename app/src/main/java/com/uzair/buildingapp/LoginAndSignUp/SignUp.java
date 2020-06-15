@@ -24,7 +24,6 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
-import com.uzair.buildingapp.Building.UserListToAssignBuilding;
 import com.uzair.buildingapp.HomeDashBoard.HomePage;
 import com.uzair.buildingapp.R;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
@@ -119,10 +118,6 @@ public class SignUp extends AppCompatActivity implements DatePickerDialog.OnDate
                             new Response.Listener<String>() {
                                 @Override
                                 public void onResponse(String response) {
-                                    // Display the first 500 characters of the response string.
-                                    Log.d("createUserResponse", "onResponse: " + response);
-                                    Toast.makeText(SignUp.this, "Successfully Register ", Toast.LENGTH_LONG).show();
-                                    progressDialog.dismiss();
 
                                     // Display the first 500 characters of the response string.
                                     Log.d("createUserResponse", "onResponse: " + response);
@@ -210,8 +205,6 @@ public class SignUp extends AppCompatActivity implements DatePickerDialog.OnDate
 
 
         } else {
-            Toast.makeText(SignUp.this, userName + "," + userPassword + ""
-                    + userPhone + "" + userCountryCode + "" + userEmail, Toast.LENGTH_SHORT).show();
 
             Toast.makeText(SignUp.this, "Required", Toast.LENGTH_SHORT).show();
         }

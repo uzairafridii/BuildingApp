@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -25,8 +26,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
-import com.uzair.buildingapp.Building.MyCurrentLocation;
-import com.uzair.buildingapp.Building.UserListToAssignBuilding;
+import com.uzair.buildingapp.Utils.MyCurrentLocation;
+import com.uzair.buildingapp.AssignUsersBuilding.UserListToAssignBuilding;
 import com.uzair.buildingapp.R;
 import com.uzair.buildingapp.SingletonVolley.MySingleton;
 import com.uzair.buildingapp.Utils.UrlsContract;
@@ -87,7 +88,8 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
 
         lat  = MyCurrentLocation.getCurrentLat();
         lng  = MyCurrentLocation.getCurrentLng();
-        Toast.makeText(getContext(), lat+","+lng, Toast.LENGTH_SHORT).show();
+
+        progressDialog = new ProgressDialog(getContext());
     }
 
     @Override
@@ -103,7 +105,6 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
                 break;
             }
             case R.id.edit: {
-                Toast.makeText(getContext(), "Edit click current location is " + lat + "\n" + lng, Toast.LENGTH_SHORT).show();
                 editBuildingDetails();
                 break;
             }
@@ -138,7 +139,6 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
             @Override
             public void onClick(View view) {
                 selectedColor = "Sky Blue";
-                Toast.makeText(getContext(), selectedColor, Toast.LENGTH_SHORT).show();
                 addLogColorData(selectedColor);
                 dialog.dismiss();
             }
@@ -149,7 +149,6 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
             @Override
             public void onClick(View view) {
                 selectedColor = "Pink";
-                Toast.makeText(getContext(), selectedColor, Toast.LENGTH_SHORT).show();
                 addLogColorData(selectedColor);
                 dialog.dismiss();
             }
@@ -159,7 +158,6 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
             @Override
             public void onClick(View view) {
                 selectedColor = "Parrot";
-                Toast.makeText(getContext(), selectedColor, Toast.LENGTH_SHORT).show();
                 addLogColorData(selectedColor);
                 dialog.dismiss();
             }
@@ -169,7 +167,6 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
             @Override
             public void onClick(View view) {
                 selectedColor = "Purple";
-                Toast.makeText(getContext(), selectedColor, Toast.LENGTH_SHORT).show();
                 addLogColorData(selectedColor);
                 dialog.dismiss();
             }
@@ -179,7 +176,6 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
             @Override
             public void onClick(View view) {
                 selectedColor = "Green";
-                Toast.makeText(getContext(), selectedColor, Toast.LENGTH_SHORT).show();
                 addLogColorData(selectedColor);
                 dialog.dismiss();
              }
@@ -189,7 +185,6 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
             @Override
             public void onClick(View view) {
                 selectedColor = "Red";
-                Toast.makeText(getContext(), selectedColor, Toast.LENGTH_SHORT).show();
                 addLogColorData(selectedColor);
                 dialog.dismiss();
             }
@@ -199,7 +194,6 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
             @Override
             public void onClick(View view) {
                 selectedColor = "Yellow";
-                Toast.makeText(getContext(), selectedColor, Toast.LENGTH_SHORT).show();
                 addLogColorData(selectedColor);
                 dialog.dismiss();
             }
@@ -209,7 +203,6 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
             @Override
             public void onClick(View view) {
                 selectedColor = "Orange";
-                Toast.makeText(getContext(), selectedColor, Toast.LENGTH_SHORT).show();
                 addLogColorData(selectedColor);
                 dialog.dismiss();
             }
@@ -262,6 +255,7 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
                         logData.put("lat", String.valueOf(lat));
                         logData.put("lng", String.valueOf(lng));
                         logData.put("detection_type", color);
+                        logData.put("created_by", String.valueOf(uid));
                         return logData;
                     }
 
@@ -296,8 +290,93 @@ public class MenuBottomSheet extends BottomSheetDialogFragment implements View.O
     }
 
 
+    // to edit the current building details
     private void editBuildingDetails()
     {
+
+        View myView = LayoutInflater.from(getContext()).inflate(R.layout.update_building_details, null);
+        AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+        alert.setView(myView);
+
+        final AlertDialog dialog = alert.create();
+        dialog.setCanceledOnTouchOutside(false);
+
+        final EditText buildingName , floorNumbers;
+        buildingName = myView.findViewById(R.id.buildingName);
+        floorNumbers = myView.findViewById(R.id.noOfFloor);
+
+        myView.findViewById(R.id.updateBuildingBtn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+
+                updateValues(buildingName.getText().toString(), floorNumbers.getText().toString());
+                dialog.dismiss();
+
+            }
+        });
+
+          dialog.show();
+
+
+    }
+
+
+    private void updateValues(final String name  , final String noOfFloor)
+    {
+        String url = UrlsContract.UPDATE_BUILDING_DETAILS + buildingGuid;
+
+        if(!name.isEmpty() && !noOfFloor.isEmpty()) {
+
+            progressDialog.setMessage("Please wait...");
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.show();
+
+            StringRequest updateBuildingRequest = new StringRequest(Request.Method.PUT, url, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.d("updateBuildingResponse", "onResponse: " + response);
+                    Toast.makeText(getContext(), "Successfully updated", Toast.LENGTH_SHORT).show();
+                    progressDialog.dismiss();
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+
+                    Log.d("updateBuildingError", "onErrorResponse: " + error.getMessage());
+                    Toast.makeText(getContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+                    progressDialog.dismiss();
+                }
+            }) {
+
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+
+                    Map<String, String> updateBuildingMap = new HashMap<>();
+                    updateBuildingMap.put("name", name);
+                    updateBuildingMap.put("no_of_floor", noOfFloor);
+
+
+                    return updateBuildingMap;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> updateHeader = new HashMap<>();
+                    updateHeader.put("Authorization", "Bearer " + token);
+
+                    return updateHeader;
+                }
+            };
+
+
+            MySingleton.getInstance(getContext()).addToRequestQueue(updateBuildingRequest);
+
+        }
+        else
+        {
+            Toast.makeText(getContext(), "All fields are required", Toast.LENGTH_SHORT).show();
+        }
 
     }
 }
